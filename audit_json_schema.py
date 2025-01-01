@@ -3,7 +3,7 @@ import os
 import click
 
 
-def audit_schema(schema, keywords_set=None, types_set=None):
+def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
     """
     Audits a JSON Schema to identify the keywords and types used.
 
@@ -11,6 +11,7 @@ def audit_schema(schema, keywords_set=None, types_set=None):
         schema (dict): The JSON Schema to audit.
         keywords_set (set): Accumulated set of keywords used in the schema.
         types_set (set): Accumulated set of types used in the schema.
+        formats_set (Set): Accumulated set of formats used in the schema.
 
     Returns:
         tuple: Two sets containing the keywords and types found in the schema.
@@ -19,6 +20,8 @@ def audit_schema(schema, keywords_set=None, types_set=None):
         keywords_set = set()
     if types_set is None:
         types_set = set()
+    if formats_set is None:
+        formats_set = set()
 
     if isinstance(schema, dict):
         for keyword in schema:
@@ -26,7 +29,7 @@ def audit_schema(schema, keywords_set=None, types_set=None):
 
             if keyword in ["allOf", "anyOf", "oneOf"]:
                 for subschema in schema["keyword"]:
-                    audit_schema(subschema, keywords_set, types_set)
+                    audit_schema(subschema, keywords_set, types_set, formats_set)
 
             if keyword in ["properties", "dependentSchemas"]:
                 for prop in schema[keyword].values():
@@ -34,17 +37,19 @@ def audit_schema(schema, keywords_set=None, types_set=None):
                         # Recursively audit nested properties
                         if key == "properties":
                             for nested_prop in value.values():
-                                audit_schema(nested_prop, keywords_set, types_set)
+                                audit_schema(nested_prop, keywords_set, types_set, formats_set)
                         else:
                             keywords_set.add(key)
                             if key == "type" and isinstance(value, str):
                                 types_set.add(value)
                             elif key == "type" and isinstance(value, list):
                                 types_set.update(value)
+                            if key == "format":
+                                formats_set.add(value)
 
             if keyword in ["definitions", "$defs"]:
                 for defn in schema[keyword].values():
-                    audit_schema(defn, keywords_set, types_set)
+                    audit_schema(defn, keywords_set, types_set, formats_set)
 
             if keyword in ["not", "if", "then", "else"]:
                 audit_schema(schema[keyword])
@@ -55,8 +60,11 @@ def audit_schema(schema, keywords_set=None, types_set=None):
                     types_set.add(types)
                 elif isinstance(types, list):
                     types_set.update(types)
+            
+            if keyword == "format":
+                formats_set.add(schema["format"])
 
-    return keywords_set, types_set
+    return keywords_set, types_set, formats_set
 
 
 @click.command()
@@ -78,7 +86,7 @@ def main(file_path):
         return
 
     # Audit the schema
-    keywords, types = audit_schema(json_schema)
+    keywords, types, formats = audit_schema(json_schema)
 
     # Report the results
     click.echo("\nKeywords used in the schema:")
@@ -87,6 +95,8 @@ def main(file_path):
     click.echo("\nTypes used in the schema:")
     click.echo(", ".join(sorted(types)))
 
+    click.echo("\nFormats used in the schema:")
+    click.echo(", ".join(sorted(formats)))
 
 if __name__ == "__main__":
     main()
