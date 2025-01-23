@@ -28,7 +28,7 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
             keywords_set.add(keyword)
 
             if keyword in ["allOf", "anyOf", "oneOf"]:
-                for subschema in schema["keyword"]:
+                for subschema in schema[keyword]:
                     audit_schema(subschema, keywords_set, types_set, formats_set)
 
             if keyword in ["properties", "dependentSchemas"]:
@@ -46,6 +46,8 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
                                 types_set.update(value)
                             if key == "format":
                                 formats_set.add(value)
+                            if key == "oneOf":
+                                audit_schema(prop, keywords_set, types_set, formats_set)
 
             if keyword in ["definitions", "$defs"]:
                 for defn in schema[keyword].values():
@@ -60,10 +62,9 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
                     types_set.add(types)
                 elif isinstance(types, list):
                     types_set.update(types)
-            
+
             if keyword == "format":
                 formats_set.add(schema["format"])
-
     return keywords_set, types_set, formats_set
 
 
