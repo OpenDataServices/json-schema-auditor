@@ -16,6 +16,7 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
     Returns:
         tuple: Three sets containing the keywords, types and string formats found in the schema.
     """
+    
     if keywords_set is None:
         keywords_set = set()
     if types_set is None:
