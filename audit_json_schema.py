@@ -11,10 +11,10 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
         schema (dict): The JSON Schema to audit.
         keywords_set (set): Accumulated set of keywords used in the schema.
         types_set (set): Accumulated set of types used in the schema.
-        formats_set (Set): Accumulated set of formats used in the schema.
+        formats_set (Set): Accumulated set of string formats used in the schema.
 
     Returns:
-        tuple: Two sets containing the keywords and types found in the schema.
+        tuple: Three sets containing the keywords, types and string formats found in the schema.
     """
     if keywords_set is None:
         keywords_set = set()
@@ -27,34 +27,19 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
         for keyword in schema:
             keywords_set.add(keyword)
 
-            if keyword in ["allOf", "anyOf", "oneOf"]:
+            # Keywords whose value is a list of schemas
+            if keyword in ["allOf", "anyOf", "oneOf", "prefixItems"]:
                 for subschema in schema[keyword]:
                     audit_schema(subschema, keywords_set, types_set, formats_set)
 
-            if keyword in ["properties", "dependentSchemas"]:
-                for prop in schema[keyword].values():
-                    for key, value in prop.items():
-                        # Recursively audit nested properties
-                        if key == "properties":
-                            for nested_prop in value.values():
-                                audit_schema(nested_prop, keywords_set, types_set, formats_set)
-                        else:
-                            keywords_set.add(key)
-                            if key == "type" and isinstance(value, str):
-                                types_set.add(value)
-                            elif key == "type" and isinstance(value, list):
-                                types_set.update(value)
-                            if key == "format":
-                                formats_set.add(value)
-                            if key == "oneOf":
-                                audit_schema(prop, keywords_set, types_set, formats_set)
-
-            if keyword in ["definitions", "$defs"]:
-                for defn in schema[keyword].values():
-                    audit_schema(defn, keywords_set, types_set, formats_set)
-
-            if keyword in ["not", "if", "then", "else"]:
-                audit_schema(schema[keyword])
+            # Keywords whose value is an object with key-value pairs where the values are schemas
+            if keyword in ["properties", "definitions", "$defs", "dependentSchemas"]:
+                for subschema in schema[keyword].values():
+                    audit_schema(subschema, keywords_set, types_set, formats_set)
+            
+            # Keywords whose value is a schema
+            if keyword in ["items", "unevaluatedItems", "contains", "not", "if", "then", "else", "propertyNames"]:
+                audit_schema(schema[keyword], keywords_set, types_set, formats_set)
 
             if keyword == "type":
                 types = schema["type"]
