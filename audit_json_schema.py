@@ -14,7 +14,7 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
         formats_set (Set): Accumulated set of string formats used in the schema.
 
     Returns:
-        tuple: Threeo sets containing the keywords, types and string formats found in the schema.
+        tuple: Three sets containing the keywords, types and string formats found in the schema.
     """
     if keywords_set is None:
         keywords_set = set()
