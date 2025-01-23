@@ -47,10 +47,9 @@ def audit_schema(schema, keywords_set=None, types_set=None, formats_set=None):
                     types_set.add(types)
                 elif isinstance(types, list):
                     types_set.update(types)
-            
+
             if keyword == "format":
                 formats_set.add(schema["format"])
-
     return keywords_set, types_set, formats_set
 
 
