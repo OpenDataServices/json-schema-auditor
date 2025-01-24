@@ -1,0 +1,57 @@
+{
+    "allOf": [
+        {
+            "anyOf": [
+                {
+                    "oneOf": [
+                        {
+                            "prefixItems": [
+                                {
+                                    "properties": {
+                                        "nonKeyword": {
+                                            "dependentSchemas": {
+                                                "nonKeyword": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "unevaluatedItems": {
+                                                            "contains": {
+                                                                "not": {
+                                                                    "format": "date-time",
+                                                                    "if": {
+                                                                        "then": {
+                                                                            "format": "uri",
+                                                                            "else": {
+                                                                                "propertyNames": {
+                                                                                    "pattern": ""
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } 
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "definitions": {
+        "nonKeyword": {
+            "title": ""
+        }
+    },
+    "$defs": {
+        "nonKeyword": {
+            "description": ""
+        }
+    }
+}

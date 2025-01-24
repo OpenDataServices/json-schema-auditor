@@ -90,7 +90,9 @@ Contributions are welcome! Please submit a pull request or open an issue for fea
 ### To contribute:
 1. Fork the repository.
 2. Create a feature branch.
-3. Make your changes and submit a pull request.
+3. Make your changes.
+4. Run tests: `PYTHONPATH=. pytest tests/test_audit_json_schema.py`
+5. Submit a pull request.
 
 ## License
 
